@@ -11,15 +11,22 @@ No webpack and no html are required as only a JSON REST service will be establis
 
 Add or adjust the Postgres databases for rocketpay_test and rocketpay_dev
 `$sudo -u postgres psql`
+
 `postgres=#ALTER USER postgres WITH PASSWORD 'xxxxxx';`
+
 `postgres=#CREATE DATABASE rocketpay_dev;`
+
 `postgres=#CREATE DATABASE rocketpay_test;`
+
 `postgres=#GRANT ALL PRIVILEGES ON DATABASE rocketpay_dev TO postgres;`
+
 `postgres=#GRANT ALL PRIVILEGES ON DATABASE rocketpay_test TO postgres;`
+
 `postgres=#\q`
 
 
 Open VS Code
+
 `$code .`
 
 
