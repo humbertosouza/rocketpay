@@ -24,10 +24,34 @@ Add or adjust the Postgres databases for rocketpay_test and rocketpay_dev
 
 `postgres=#\q`
 
-
 Open VS Code
 
 `$code .`
+
+After adding and adjusting the DB
+
+`$mix ecto.setup`
+
+Get dependencies for Elixir (Online)
+
+`$mix deps.get`
+
+Create all lint configuration for the application - All confs will be at .credo.exs
+
+`mix credo gen.config`
+
+Open the file .credo.exs and update the "Readability.ModuleDoc" from [ ] to false. We will not generate documentation about the code.
+
+`        {Credo.Check.Readability.ModuleDoc, false},`
+
+Go to the rocketpay_web\router.ex, add after  `pipe_through :api` (line 11)
+
+`    get "/:filename", WelcomeController, :index  #this adds a route under /api`
+
+
+
+
+
 
 
   * Install dependencies with `mix deps.get`
