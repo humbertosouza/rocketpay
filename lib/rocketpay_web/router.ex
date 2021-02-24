@@ -11,6 +11,7 @@ defmodule RocketpayWeb.Router do
     #get "/", WelcomeController, :index
     get "/:filename", WelcomeController, :index
 
+    post "/users", UsersController, :create
 
 
   end
