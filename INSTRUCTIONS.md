@@ -162,14 +162,23 @@ For showing the help of a given function use
 
 `h String.split`
 
-Enum x lists
-Enum do lazy load while lists process imediately.
+## Enum x Streams
+
+Streams do lazy load while Enum process imediately.
 
 The Erlang VM is quite optmized so it would prepare a sequence of enums at once, optmizing the number of lists/variables created in memory
 
 `Enum.map(lista, fn .. end) ` - The fn ... end represents an anonymous function.
 
-`Enum.map(lista, fn number -> String.to_integer(number) end)` - For each number, create a list. it is immutable. In Elixir, data in memory never changes. 
+`Enum.map(lista, fn number -> String.to_integer(number) end)` - For each number, create a list. it is 
+immutable. In Elixir, data in memory never changes. 
+
+`|> Enum.map(fn number -> String.to_integer(number) end )` It is processed ...`
+
+`|> Stream.map(fn number -> String.to_integer(number) end)` lazy operator ...`
+
+`|> Enum.sum()`  Here is where the Stream maps are processed at once
+
 
 
 ## Aliases
@@ -206,7 +215,7 @@ Example from the enhanced welcome_controller.ex file
 
 Create the files following the controller name added by _test.exs. Tests are script files, so the "S" goes to the filename extension.
 
-Create the `numbers_test.exs`
+Create the `numbers_test.exs` under the folder test
 
 ```javascript
 
@@ -234,6 +243,7 @@ At the prompt, run the commamd mix test
 ## Useful links
 
 Configure Postgres in Ubuntu 20
+
 https://www.tecmint.com/install-postgresql-and-pgadmin-in-ubuntu/
 
 https://www.tecmint.com/backup-and-restore-postgresql-database/
