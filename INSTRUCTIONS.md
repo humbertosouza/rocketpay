@@ -46,7 +46,7 @@ Open the file .credo.exs and update the "Readability.ModuleDoc" from [ ] to fals
 
 Go to the rocketpay_web\router.ex, add after  `pipe_through :api` (line 11)
 
-`    get "/:filename", WelcomeController, :index  #this adds a route under /api`
+`    get "/", WelcomeController, :index  #this adds a route under /api`
 
 Create a file called "welcome_controller.ex under rocketpay_web\controllers
 Note that Elixir is a functional language, so there are no classes. It has functions only.
@@ -66,6 +66,19 @@ end
 ```
 
 Another interesting point is that the function parameters starting with underscore are ignored by default. E.g. _params
+
+
+## Running the application
+
+  * Start Phoenix endpoint with `mix phx.server`
+
+Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+
+You should try http://localhost:4000/api for the first version of the welcome_controller;
+
+
+## Creating Elixir functions
+
 
 Create the file rocketpay\numbers.ex having the function sum_from_file(filename)
 
@@ -90,7 +103,9 @@ Create the file numbers.csv on the project root. It's content should be:
 
 `1,2,3,4,8,9,10`
 
-Try calling the function from the command prompt. 
+#The Elixir command line interpreter
+
+Let's call functions from the command prompt. 
 
 `$iex`
 
@@ -166,9 +181,9 @@ One's can use aliases for calling functions from both the code and the iex.
 `iex(2)>Numbers.sum_from_file("banana")`
 
 
-## Lambdas
+## Pipe Operators
 
-It is possible to pass the parameters to the next line (function). It will be always the first parameter of the function.
+It is possible to pass the parameters to the next function via pipe operators. It will be always the first parameter of the function.
 
 iex(1)>"numbers" |> Rocketpay.Numbers.sum_from_file()
 
@@ -186,18 +201,6 @@ Example from the enhanced welcome_controller.ex file
   end
 
 ```
-
-
-## Running the application
-
-  * Start Phoenix endpoint with `mix phx.server`
-
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
-
-You should try http://localhost:4000/api for the first version of the welcome_controller;
-
-You should try http://localhost:4000/api/numbers for the second version of the welcome_controller;
-
 
 ## Unit tests
 
@@ -226,7 +229,7 @@ end
 ```
 At the prompt, run the commamd mix test
 
-`mix test` 
+`$mix test` 
 
 ## Useful links
 
