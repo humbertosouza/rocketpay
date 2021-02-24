@@ -9,8 +9,8 @@ defmodule RocketpayWeb.WelcomeController do
   alias Rocketpay.Numbers
 
   def index(conn, %{"filename" => filename}) do #This saves the pattern match into a variable filename.
-                                                # in the iex, it uses string: value; but in the controller "string => value
-
+                                                # in the iex, it uses string: value;
+                                                # but in the controller file it uses "string => value
     filename
     |> Numbers.sum_from_file()
     |> handle_response(conn) #conn is the second parameter!
