@@ -1,4 +1,4 @@
-# Elixir - JSON backend payment app - Part 1
+# Elixir - JSON backend payment app - Part 2
 
 ## Ecto - Database data for Phoenix and Elixir
 
@@ -148,10 +148,17 @@ end
 ```
 
 It will save the chain of pipes for the iex(x)> module.
+You can test it in the iex:
+
+`iex(1)>params = %{name: "Humberto3", password: "123456", nickname: "beto3", age: 41, email: "humberto3@ited.com.br"}`
+
+`iex(2)>Bumblepay.create_user(params) `
 
 Now it is time to create routes.
 
 Go to therocketpay_web/route.ex and add the following after the existing get entry.
+
+`post "/users", UsersController, :create`
 
 Copy the existing welcome_controller.ex and add the copied file to the same folder 
 lib/rocketpay_web/controllers/users_controller.ex
