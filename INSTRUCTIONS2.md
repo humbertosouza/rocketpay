@@ -187,12 +187,18 @@ defmodule RocketpayWeb.UsersController do
   defp handle_response({:error, result}, conn) do
    conn
     |> put_status(:bad_request)
-    |> put_view(RocketpayWeb.ErrorView)
+    |> put_view(RocketpayWeb.ErrorView) #As we are not using the controller name,  it is calling "ErrorView"
+                                        # instead of ErrorView
+                                        # it calls  the rocketpay_web/views/error_view.ex
+                                        # and loads a defailt message from template.
     |> render("400.json", result: result)
   end
 
 end
 ```
+
+## Facades
+
  Then create a view under lib/rocketpay_web/views/users_view.ex
 
  The content will look like as follows:
