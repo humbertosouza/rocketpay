@@ -3,6 +3,7 @@ defmodule Rocketpay.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Rocketpay.Account
   alias Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true} #Binary_ID means UUID.
@@ -17,6 +18,7 @@ defmodule Rocketpay.User do
     field :password, :string, virtual: true # this field is virtual
     field :password_hash, :string
     field :nickname, :string # the money is transferred between users via nickname
+    has_one :account, Account
 
     timestamps() #Must be present as the fields are mandatories
   end
