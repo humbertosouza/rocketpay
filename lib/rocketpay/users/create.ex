@@ -1,5 +1,12 @@
 defmodule Rocketpay.Users.Create do
 
+  # References:
+  # 1 - https://www.youtube.com/watch?v=eHYQcKe1WQ4
+  # 2 - https://www.youtube.com/watch?v=69NxjBQNTIk
+  # 3 - https://www.youtube.com/watch?v=ay6rlFXfI8g
+  # 4 - https://www.youtube.com/watch?v=5fwonPrjQN8
+  # 5 - https://www.youtube.com/watch?v=_5KYB0hbRAI
+
   alias Rocketpay.{User, Repo, Account} #creating 2 aliases at same time
   alias Ecto.Multi
 

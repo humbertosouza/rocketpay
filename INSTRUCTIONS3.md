@@ -1,5 +1,9 @@
 # Elixir - JSON backend payment app - Part 3
 
+Remember:
+
+`%User{}` is a struct. 
+
 ## Repo.<tab>
 
 Application.Repo. contains a list of commands, most related to database instructions.
@@ -353,8 +357,203 @@ Now that data is made available, the view can be created.
 Go to Rocketpayweb/view/user_view.ex and update the file accordingly
 
 ```elixir
+defmodule RocketpayWeb.UsersView do #same name from the controller, so it renders correctly
+  alias Rocketpay.{User, Account}
+  def render("create.json", %{
+      user: %User{account: %Account{id: account_id, balance: balance}, id: id, name: name, nickname: nickname}
+      }) do
+    %{
+      message: "User Created",
+      user: %{
+        id: id,
+        name: name,
+        nickname: nickname,
+        account: %{
+          id: account_id,
+          balance: balance
+        }
+      }
+    }
+
+  end
+end
+```
+
+Now run the `$mix phx.server`, go to the Insomnia/Postman and create a new user with account using the POST endpoint `http://localhost:4000/api/users`.
+
+## Account transactions
+
+Now you should be able to create POST withdraw and deposits endpoints.
+
+http://localhost:4000/api/accounts/<uudi_account>/deposit
+
+http://localhost:4000/api/accounts/uudi_account/withdraw
+
+JSON
+{
+    "value":120.2
+}
+
+For this, add the following lines to your router.ex file:
+
+```elixir
+    post "/accounts/:id/deposit", AccountsController, :deposit
+    post "/accounts/:id/withdraw", AccountsController, :withdraw
+```
+
+Create the file /lib/rocketpay_web/controllers/accounts_controller.ex
+
+You may copy its contents from users_controller.ex and edit accordingly or make the code as following
+
+```elixir
+defmodule RocketpayWeb.AccountsController do
+  use RocketpayWeb, :controller
+
+  alias Rocketpay.Account
+
+  action_fallback RocketpayWeb.FallbackController
+
+  #%Account{} is a struct
+
+  def deposit(conn, params) do
+    with {:ok, %Account{} = account} <- Rocketpay.deposit(params) do
+
+      conn
+      |> put_status(:ok) # http 201
+      |> render("update.json", account: account) #it will call a view. Create a view with same name of the controller
+      end
+
+  end
+
+end
+```
+
+Go to the file `/lib/rocketpay.ex` and add the folloing defdelegates:
+
+```elixir
+  alias Rocketpay.Accounts.Deposit
+  ...
+
+  defdelegate deposit(params), to: Deposit, as: :call
+  
+```
+
+Note that the responsibilites of each API call are well defined.
+
+Now lets create the module by creating a folder at `lib/rocketpay/accounts`
+
+Inside it, create the `deposit.ex` file. Make it as following
+
+```elixir
+defmodule Rocketpay.Accounts.Deposit do
+  alias Ecto.Multi
+
+  alias Rocketpay.{Account, Repo}
+
+  # It is just an account update, however, the account may exist or not..
+  # We try to read the account and update the statement. If OK, then finish.
+  # There is no get on Multi .... but you can run anything using .run
+  # Use acconut, repo, _changes are not needed, and we need to pattern match id
+
+  # read id and value via pattern match
+  def call(%{"id" => id, "value" => value}) do
+    Multi.new()
+    |>Multi.run(:account, fn repo, _changes -> get_account(repo, id) end)
+    |>Multi.run(:update_balance, fn repo, %{account: account} -> update_balance(repo, account, value) end)
+    |>run_transaction()
+  end
+
+  defp get_account(repo, id) do
+    case repo.get(Account, id) do
+      nil -> {:error, "Account not found!"}
+      account -> {:ok, account}
+    end
+  end
+
+  # We need to sum/subtract the value
+  # We also need to check if the value is valid
+  defp update_balance(repo, account, value) do
+    account
+    |> sum_values(value)
+    |> update_account(repo, account)
+  end
+
+  # If you are working with financial data, use the lib decimal.
+  # Phoenix + Ecto make this lib available by default.
+
+  defp sum_values(%Account{balance: balance}, value) do
+    value
+    |> Decimal.cast()
+    |> handle_cast(balance)
+  end
+
+  defp handle_cast({:ok, value}, balance), do: Decimal.add(value, balance)
+  defp handle_cast(:error, _balance), do: {:error, "Invalid deposit value!"}
+
+
+
+  # The last step for updating account
+  defp update_account({:error, _reason} = error, _repo, _account), do: error
+  defp update_account(value, repo, account) do
+    params = %{balance: value}
+    params
+    |>Account.changeset(account)
+    |>repo.update()
+
+  end
+
+  #Now you can copy and adapt the run_transaction code from create.ex
+  defp run_transaction(multi) do
+    case Repo.transaction(multi) do
+      {:error, _operation, reason, _changes} -> {:error, reason} #dont care the 2nd and 4th parameters
+      # last transaction from multi is update_balance, as following
+      #     |>Multi.run(:update_balance, fn repo, %{account: account} -> update_balance(repo, account, value) end)
+      {:ok, %{update_balance: account}} -> {:ok, account}
+    end
+  end
+
+end
 
 ```
+
+Init the iex `$iex -S mix` and type `iex()>Decimal.cast("50.55")` and `iex()>Decimal.cast("banana")`
+
+Then try it, getting the latest account ID available:
+```elixir
+iex()>Rocketpay.Repo.all(Rocketpay.Account)
+iex()>Rocketpay.deposit(%{"id" => "2eeb172c-a881-4463-b949-a44d1944be81", "value" => "50.0"})
+```
+You will notice that the it is missing the user id.
+
+On account.ex, change the header of the following function to have the struct as input, and if no data is added, \\ indicates the default value, that in this case, is a empty module struct
+
+```elixir
+  #Changeset maps and validate data.
+  # struct module has moved to the function parameters. It can be a empty struct OR a struct that have value
+  # \\ indicates a DEFAULT parameters, that is the empty struct
+  def changeset(struct \\ %__MODULE__{}, params) do
+    struct
+```
+
+Update the deposit.ex update_account function to match the new order (account, params) to match
+```elixir
+  defp update_account(value, repo, account) do
+    params = %{balance: value}
+    account
+    |>Account.changeset(params)
+    |>repo.update()
+  end
+```
+
+Now recompile in iex and try again.
+
+If running `Rocketpay.deposit(%{"id" => "2eeb172c-a881-4463-b949-a44d1944be81", "value" => "50.0"})` multiple times, the balance is expected to grow.
+
+
+1:15
+
+## Other references
+
 
 
 
