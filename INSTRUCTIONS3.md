@@ -550,12 +550,6 @@ Now recompile in iex and try again.
 If running `Rocketpay.deposit(%{"id" => "2eeb172c-a881-4463-b949-a44d1944be81", "value" => "50.0"})` multiple times, the balance is expected to grow.
 
 
-1:15
-
-## Other references
-
-
-
 
 
 

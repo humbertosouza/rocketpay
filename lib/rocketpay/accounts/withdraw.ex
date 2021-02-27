@@ -1,12 +1,7 @@
-defmodule Rocketpay.Accounts.Deposit do
+defmodule Rocketpay.Accounts.Withdraw do
   alias Ecto.Multi
 
   alias Rocketpay.{Account, Repo}
-
-  # It is just an account update, however, the account may exist or not..
-  # We try to read the account and update the statement. If OK, then finish.
-  # There is no get on Multi .... but you can run anything using .run
-  # Use acconut, repo, _changes are not needed, and we need to pattern match id
 
   # read id and value via pattern match
   def call(%{"id" => id, "value" => value}) do
@@ -40,7 +35,7 @@ defmodule Rocketpay.Accounts.Deposit do
     |> handle_cast(balance)
   end
 
-  defp handle_cast({:ok, value}, balance), do: Decimal.add(balance, value)
+  defp handle_cast({:ok, value}, balance), do: Decimal.sub(balance, value) #inverted when adding
   defp handle_cast(:error, _balance), do: {:error, "Invalid deposit value!"}
 
 
