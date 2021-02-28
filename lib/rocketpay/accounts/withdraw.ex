@@ -20,7 +20,13 @@ defmodule Rocketpay.Accounts.Withdraw do
       # last transaction from multi is update_balance, as following
       #     |>Multi.run(:update_balance, fn repo, %{account: account} -> update_balance(repo, account, value) end)
       #{}:ok, %{update_balance: account}} -> {:ok, account} # Replaced by the line below.
-      {:ok, %{account_withdraw: account}} -> {:ok, account}
+
+      # Check the corrected bug comments on deposit.ex and the test accounts_controller_test.exs
+      # bugged version
+      #{:ok, %{account_withdraw: account}} -> {:ok, account}
+      # Corrected version
+      {:ok, %{withdraw: account}} -> {:ok, account}
+
     end
   end
 

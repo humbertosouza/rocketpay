@@ -276,14 +276,17 @@ Even better, you could use `$mix coveralls.html` you can copy the file URL by co
 Now let's create some tests.
 So one test per type (changeset, controller, view) can be tried.
 
-1 - User's create test
+### 1 - User's create test
 
 Create the file `test/rocketpay/users/create_test.exs` and its content should be
 
 ```elixir
 defmodule Rocketpay.Users.CreateTest do
-  # Add Test to the end of the module name.any()
-  # We are not using the ExUnit
+  # Add Test to the end of the module name.any so it will call name.anyTest
+
+  # We are not using the ExUnit, but using Datacase that includes ExUnit and have some
+  #  helper functions that help with the database rollback after the tests and
+  #  pattern matching for assertion in the errors_on() function.
   use Rocketpay.DataCase
 
   alias Rocketpay.User
@@ -291,7 +294,7 @@ defmodule Rocketpay.Users.CreateTest do
 
   describe "call/1" do
     test "When all params are valid, returns an user" do
-      params =%{
+      params = %{
         name: "Humberto",
         password: "nan1234",
         nickname: "gostoso",
@@ -305,32 +308,287 @@ defmodule Rocketpay.Users.CreateTest do
       # the ^ means it is the PIN operator. If  there is no ^ the test would pass. But the PIN fix the value
       # it is using PIN and = . The ID is generated automatically, and the value will be a new value.
       # It will assure the reading before using it.
-      assert %User{name:"Humberto", age: 27. id: ^user_id} = user
+      assert %User{name: "Humberto", age: 27, id: ^user_id} = user
 
     end
 
-    test "When there are invalid params, returns an error" do
-      params =%{
+
+    test "When there are invalid params, returns an user" do
+      params = %{
         name: "Humberto",
         nickname: "gostoso",
         email: "test@email.com",
-        age: 27
+        age: 19
       }
 
       {:error, changeset} = Create.call(params)
 
       expected_response = %{
-          age: ["Must be greater than or equal to 18"],
-          password: ["Cant be blank"]
-      }  
+          age: ["must be greater than or equal to 18"],
+          password: ["can't be blank"]
+      }
       # the ^ means it is the PIN operator. If  there is no ^ the test would pass. But the PIN fix the value
       # it is using PIN and = . The ID is generated automatically, and the value will be a new value.
       # It will assure the reading before using it.
-      assert errors_on(changeset) = expected_response
+
+      #assert "banana" == errors_on(changeset) # Use this for checking/matching the errors before implementing
+      #                                          The real case.
+      assert errors_on(changeset) == expected_response
     end
   end
 end
 ```
+
+Notice that the `Rocketpay.DataCase` is being used in this test. Click on CTRL+function to get to it and find the function `errors_on(changeset)`. We are interested in using this function to compare to all expected responses.
+
+Another feature is that the `data_case.ex` setups the database as Ecto sandbox. Check the `setup tags do` for learning more. It runs all the tests, and after the tests, it runs rollback of everything and the DB remains clean. 
+
+### 2 - Creating a controller test
+
+Create a test for accounts_controller.ex. Create the file `test/rocketpay_web/controllers/accounts_controller.exs` and add the following:
+
+```elixir
+defmodule RocketpayWeb.AccountsControllerTest do
+
+end
+```
+`RocketpayWeb.ConnCase` will be used for arraging the controller functionalities for this test.
+
+Remember that controller transactions must be authenticated.
+
+Correct the file name to be `accounts_controller_test.exs` otherwise it will not run the tests;
+
+There are some debug involved in this test. There are updates applied to the source codes for `withdraw.ex` and `deposit.ex` to provide the correct returns from the `run_transaction` function.
+
+Some debugs advices are found in the source code below as well.
+
+```elixir
+defmodule RocketpayWeb.AccountsControllerTest do
+
+  # This will help because we have controller functionalities to be used in this test.
+  use RocketpayWeb.ConnCase
+
+  alias Rocketpay.{Account, User}
+
+  # it is deposit/2 as it expects the connection and the paramenters
+  describe "deposit/2" do
+    # User creation will require a setup
+    setup %{conn: conn} do
+      params = %{
+        name: "Humberto",
+        password: "nan1234",
+        nickname: "gostoso",
+        email: "test@email.com",
+        age: 27
+      }
+
+      {:ok, %User{account: %Account{id: account_id}}} = Rocketpay.create_user(params)
+
+      #Here the authentication needs to be set in order to run the POST commands adequately
+      # for the expected tests. Fill the line below as the result of the
+      # previous result of the basic authentication `iex()>Base.encode64("banana:nanica123")`
+      # The put_req_header will add the field/value to the header.
+      conn = put_req_header(conn, "authorization", "Basic YmFuYW5hOm5hbmljYTEyMw==" )
+
+      # The end of a setup a tuple having :ok and key/value are always required
+      {:ok, conn: conn, account_id: account_id}
+    end
+
+    test "when all params are valid, execute the deposit", %{conn: conn, account_id: account_id} do
+      params = %{"value" => "50.00"}
+
+      # Use the helper from the ConnCase controller to find the account route
+      # Post calls the same post as Postman/Insomnia
+      # The format is Routes.accounts_path(connection, action(deposit), id (part of the URL), parameters)
+      # When using json_response in tests for encoding the response, we need to provide the valid
+      #  match verb(:ok) because the test will validate it.
+      # json_response(:ok) will not work because the transaction is not authenticated.
+      response =
+        conn
+        |> post(Routes.accounts_path(conn, :deposit, account_id, params))
+        |> json_response(:ok)
+
+      # For testing the output, do this first
+      # assert  response == banana
+      # Copy the values from the test results
+
+      # For the real test, we cannot use == but the pattern match because the id varies every time
+      # We need to ignore the id by making _id
+
+      # HOWEVER, the code below expects the balance to change, but it came zero
+      assert %{
+                "account" => %{"balance" => "50.00", "id" => _id },
+                "message" => "Balance changed succesfully"
+              } = response
+
+      # You may debug the code to find where the issue is by using IO.inspect() within the pipes
+      # |> ...
+      # |> IO.inspect()
+      # |> ...
+
+      # the problem was in the deposit.ex. Check it by changing the `defp run_transaction(multi) do
+      # Check the comments there for more details.
+    end
+  end
+end
+```
+
+Remember of removing IO.inspect() calls.
+
+Add the second test to the module following the below code (basically a copy of the uncommented above code). The important point are the messages and the wrong value
+
+```elixir
+    test "when there are invalid params, returns an error", %{conn: conn, account_id: account_id} do
+      params = %{"value" => "banana"}
+
+      response =
+        conn
+        |> post(Routes.accounts_path(conn, :deposit, account_id, params))
+        |> json_response(:ok)
+
+      assert %{
+                "account" => %{"balance" => "50.00", "id" => _id },
+                "message" => "Balance changed succesfully"
+              } = response
+    end
+```
+Run the test and notice that it returns a 400 error. Please update the json_response to `json_response(:bad_request) #400`
+
+Now it will pass the 400, but match incorrect message. Correct the expected message to `Invalid operation value!`
+
+Even though `assert %{"message" => "Invalid operation value!"} = response` works, we don't need it anymore as we can ulse the `==` as there are no dynamic values to be checked, and it is used on the LEFT side of the function. It can be replaced by:
+
+```elixir
+      expected_value = %{
+        "message" => "Invalid operation value!"
+      }
+
+      assert  expected_value == response
+```
+
+You could add tests to check if the authentication is not present, or if it is an invalid UUID and so on.
+
+Generate the report mix coverals.html and check that now we cover 57% of the code. :)
+
+### 3 - Testing a view
+
+Create the file `test/rocketpay_web/controllers/views/users_view_test.exs`
+
+Copy the content of the users_view.ex file to the new file, leaving the first and last line and adding the `Test` keyword to its module name.
+
+Make the code be like the following paying attention to its comments.
+
+```elixir
+defmodule RocketpayWeb.UsersViewTest do #same name from the controller, so it renders correctly
+  # Uses the same ConnCase module
+  use RocketpayWeb.ConnCase
+
+  # This make the 'render' function available
+  import Phoenix.View
+
+  alias Rocketpay.{Account, User}
+  alias RocketpayWeb.UsersView
+
+  # The test below has no describe because it is a single function test module, for rendering
+  #  so there is no need for the description in this view, even though it could be done.
+  # Phoenix itself follows this standard - check the file error_view_test.exs file in the same folder.
+
+  # Lets create the user
+  # *** The view is called only in case of success ***
+  # Copy the parameters from the create_test.exs
+  test "renders create.json" do
+    params = %{
+      name: "Humberto",
+      password: "nan1234",
+      nickname: "gostoso",
+      email: "test@email.com",
+      age: 27
+    }
+
+    {:ok, %User{id: user_id, account: %Account{id: account_id}} = user} = Rocketpay.create_user(params)
+
+    response = render(UsersView, "create.json", user: user )
+
+    # this is to fail the test and create the correct response.
+    #assert "banana" == response
+
+    # As some data is variable, copy the `mix test` output of this test and past it here.
+    #assert %{message: "User Created", user: %{account: %{balance: #Decimal<0.00>, id: "37231f7a-54a9-4337-ae25-3e311d18cf1d"}, id: "c6a50e9f-629a-4be9-a67b-87aa600bfb50", name: "Humberto", nickname: "gostoso"}} = response
+
+    #Change #Decimal<"0.00"> to Decimal.new("0.00")
+    # it will also use the account_id above and the user_id above
+    expected_response = %{message: "User Created",
+      user:
+        %{account:
+          %{balance:
+              Decimal.new("0.00"),
+              id: account_id
+          },
+          id: user_id,
+          name: "Humberto",
+          nickname: "gostoso"
+        }
+      }
+
+    # In this case, we can use  the  == because we created the response and all required variables BEFORE
+    #  this function is invoked.
+    assert expected_response == response
+  end
+end
+```
+### Test summaries
+
+The most important thing is how to structure tests for views, controllers and unit tests.
+
+A challenge would be covering the remainder tests.
+The tests take 1.5 second because of the DB usage.
+
+Now you can add the async = true to the tests created so far:
+`use Rocketpay.DataCase` should be `use Rocketpay.DataCase, async: true`
+
+The files covered so far are:
+
+`create_test.exs`
+
+`users_view_test.exs`
+
+`accounts_controller_test.exs`
+
+`numbers_test.exs` to the ExUnit
+
+Run the tests again using `mix test`. They should run faster this time.
+
+The flag async: true makes everything run in parallel. Some services may require that there is no concurrence (as using sequential ids) where async true may fail some of your tests.
+
+### The extra mile
+
+You can go beyond and add new cases, missing tests.
+It is also interesting to process parallel tasks and files
+
+### Final remarks
+
+Elixir has amazing functional syntax. However, the Phoenix framework is still verbose when comparing Java + Spring.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

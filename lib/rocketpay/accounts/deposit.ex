@@ -20,7 +20,18 @@ defmodule Rocketpay.Accounts.Deposit do
       # last transaction from multi is update_balance, as following
       #     |>Multi.run(:update_balance, fn repo, %{account: account} -> update_balance(repo, account, value) end)
       #{}:ok, %{update_balance: account}} -> {:ok, account} # Replaced by the line below.
-      {:ok, %{account_deposit: account}} -> {:ok, account}
+
+      # A bug was found below. We can map it by running the following during tests
+      # original: {:ok, %{account_deposit: account}} -> {:ok, account}
+      # debug version:
+      # {:ok, %{account_deposit: account} = map} ->
+      #  IO.inspect(map)
+      #  {:ok, account}
+
+      # The same happened to the withdraw.
+
+      # correct version
+      {:ok, %{deposit: account}} -> {:ok, account}
     end
   end
 
