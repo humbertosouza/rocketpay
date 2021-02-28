@@ -3,6 +3,8 @@ defmodule RocketpayWeb.AccountsController do
 
   alias Rocketpay.Account
 
+  alias Rocketpay.Accounts.Transaction.Response, as: TransactionResponse
+
   action_fallback RocketpayWeb.FallbackController
 
   #%Account{} is a struct
@@ -23,4 +25,13 @@ defmodule RocketpayWeb.AccountsController do
       |> render("update.json", account: account) #it will call a view. Create a view with same name of the controller
       end
   end
+
+  def transaction(conn, params) do
+    with {:ok, %TransactionResponse{} = transaction} <- Rocketpay.transaction(params) do
+      conn
+      |> put_status(:ok) # http 201
+      |> render("transaction.json", transaction: transaction)
+      end
+  end
+
 end

@@ -179,7 +179,30 @@ immutable. In Elixir, data in memory never changes.
 
 `|> Enum.sum()`  Here is where the Stream maps are processed at once
 
+## Maps 
 
+Maps are structures as found on other languages. Its use in Elixir follows:
+
+`iex()>mapa = %{a: 1, b: 2, c: 3, d: 4}`
+
+`iex()> Map.get(mapa, :b)`
+
+Results 2
+
+## Atoms
+
+Atoms as largely used in Elixir.
+Atoms are items similar to strings but they have a special function in Elixir.
+They can be converted from one type to another.
+
+```elixir
+$iex
+iex()>String.to_atom("agua")
+:agua
+iex()>operation = :test
+iex()>"account_#{Atom.to_string(operation)}" |> String.to_atom()
+:account_test
+```
 
 ## Aliases
 
