@@ -1,14 +1,16 @@
 # Rocketpay
 
-To start your Phoenix server:
+This is a repository for learning Elixir and its Phoenix framework.
 
-  * Install dependencies with `mix deps.get`
-  * Create and migrate your database with `mix ecto.setup`
-  * Start Phoenix endpoint with `mix phx.server`
+## Step by step instructions to reproduce the code and learn Elixir
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+The step by step manual are divided in 5 parts:
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+Part 1 - [INSTRUCTIONS.md] https://github.com/humbertosouza/rocketpay/blob/main/INSTRUCTIONS.md
+Part 2 - [INSTRUCTIONS2.md] https://github.com/humbertosouza/rocketpay/blob/main/INSTRUCTIONS2.md
+Part 3 - [INSTRUCTIONS3.md] https://github.com/humbertosouza/rocketpay/blob/main/INSTRUCTIONS3.md
+Part 4 - [INSTRUCTIONS4.md] https://github.com/humbertosouza/rocketpay/blob/main/INSTRUCTIONS4.md
+Part 5 - [INSTRUCTIONS5.md] https://github.com/humbertosouza/rocketpay/blob/main/INSTRUCTIONS5.md
 
 ## Learn more
 
