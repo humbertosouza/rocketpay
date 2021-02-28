@@ -56,7 +56,7 @@ Using Insomnia or Postman, call the API POST endpoint http://localhost:4000/api/
 
 With the following JSON content
 
-```javascript
+```elixir
 {
     "name":"Joao2",
     "nickname": "john2",
@@ -242,7 +242,7 @@ However, Ecto will not load by default to avoid overflowing excessive data query
 
 If the account has been correctly related, it should show
 
-```javascript
+```elixir
 [ 
   ...
   %Rocketpay.User{

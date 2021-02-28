@@ -15,7 +15,7 @@ A migration is a file containing commands that will be executed in the DB.
 
 Check the file snippet below for more details.
 
-```javascript
+```elixir
   # Change allows to change to reflect what is created. It is also allow rollbacks
   def change do
     create table :users do
@@ -47,7 +47,7 @@ Go to the lib/Rocketpay/repo.ex, which takes care of the database module;
 
 Go to the config.exs and add the following lines after the config instruction having the signing salt:
 
-```javascript
+```elixir
 config :rocketpay, Rocketpay.Repo,
   migration_primary_key: [type: :binary_id],
   migration_foreing_key: [type: :binary_id]
@@ -58,7 +58,7 @@ Go back to the command prompt, and run `$mix ecto.drop` , which will delete the 
 Then run again `$mix ecto.create` and `$mix ecto.migrate` again to have the UUIDs as defaults.
 
 The content of the file user.ex should be something like
-```javascript
+```elixir
 defmodule Rocketpay.User do
   # Map the schema. Schema is the closest thing to the model, but it is only data mapping here.any()
   use Ecto.Schema
@@ -124,7 +124,7 @@ Then create inside lib/rocketpay/users create the file `create.ex`
 
 Make sure the file looks like the following.
 
-```javascript
+```elixir
 defmodule Rocketpay.Users.Create do
    alias Rocketpay.{Repo, User} #creating 2 aliases at same time
 
@@ -139,7 +139,7 @@ end
 
 Go to the root folder called "rocketpay.ex", delete the documentation and make it as following
 
-```javascript
+```elixir
 defmodule Rocketpay do
   alias Rocketpay.Users.Create, as: UserCreate
 
@@ -165,7 +165,7 @@ lib/rocketpay_web/controllers/users_controller.ex
 
 Update the code according to the following.
 
-```javascript
+```elixir
 defmodule RocketpayWeb.UsersController do
   use RocketpayWeb, :controller
 
@@ -203,7 +203,7 @@ end
 
  The content will look like as follows:
 
- ```javascript
+ ```elixir
  defmodule RocketpayWeb.UsersView do #same name from the controller, so it renders correctly
   alias Rocketpay.User
   def render("create.json", %{user: %User{id: id, name: name, nickname: nickname}}) do

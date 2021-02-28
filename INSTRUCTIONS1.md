@@ -54,7 +54,7 @@ The controller is a special function. what makes it special is the flag `Rocketp
 
 The file content follows
 
-```javascript
+```elixir
 defmodule RocketpayWeb.WelcomeController do
   use RocketpayWeb, :controller
 
@@ -82,8 +82,7 @@ You should try http://localhost:4000/api for the first version of the welcome_co
 
 Create the file rocketpay\numbers.ex having the function sum_from_file(filename)
 
-```javascript
-
+```elixir
 defmodule Rocketpay.Numbers do
   def sum_from_file(filename) do
     # Classic way
@@ -221,7 +220,7 @@ iex(1)>"numbers" |> Rocketpay.Numbers.sum_from_file()
 
 Example from the enhanced welcome_controller.ex file
 
-```javascript
+```elixir
   def index(conn, %{"filename" => filename}) do 
         #This saves the pattern match into a variable filename.
         # in the iex, it uses string: value;
@@ -240,7 +239,7 @@ Create the files following the controller name added by _test.exs. Tests are scr
 
 Create the `numbers_test.exs` under the folder test
 
-```javascript
+```elixir
 
 defmodule Rocketpay.NumbersTest do
   use ExUnit.Case
